@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <title>Document</title>
+</head>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: white;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+    }
+    .slide {
+        width: 250px;
+        background-color: #ffc107;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        color: #6c757d;
+    }
+    .slide h2 {
+        margin-bottom: 20px;
+    }
+    .slide a {
+        padding: 15px 10px;
+        margin: 5px 0;
+        color: white;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+    .slide a:hover {
+        background-color: #6c757d;
+    }
+    .slide a.monit {
+        background-color: #ffc107;
+    }
+    .slide a.monit:hover {
+        background-color: #6c757d;
+    }
+    .slide a.logout {
+        margin-top: auto;
+        background-color: #ffc107;
+    }
+    .slide a.logout:hover {
+        background-color: #6c757d;
+    }
+    .corr {
+        flex: 1;
+        padding: 100px;
+        overflow-y: auto;
+    }
+    .corr h1 {
+        margin-top: 0;
+        font-size: 10px;
+        color: white;
+    }
+    .corr p {
+        color: #6c757d;
+    }
+    .head {
+        background-color: white;
+        color: white;
+        padding: 15px;
+        text-align: right;
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 290px;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+    .head img {
+        vertical-align: middle;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        margin-right: 10px;
+    }
+    .head span {
+        font-size: 14px;
+        margin-right: 10px;
+        color: #6c757d;
+    }
+    .corr i {
+        color: #6c757d;
+        padding: 10px;
+    }
+    .options {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 15px;
+        background: #ffc107;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        white-space: nowrap;
+    }
+    .option {
+        display: block;
+        padding: 10px;
+        color: #f8f9fa;
+        text-decoration: none;
+    }
+    .option:hover {
+        background: #6c757d;
+    }
+    .card {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 20px;
+        margin: 10px;
+        text-align: center;
+        background-color: #f9f9f9;
+    }
+    .card-header {
+        font-weight: bold;
+    }
+    .carousel {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+    }
+    .carousel::-webkit-scrollbar {
+        display: none;
+    }
+    .card {
+        scroll-snap-align: start;
+        flex: 0 0 80%;
+        margin: 10px;
+        background-color: #ffffff;
+    }
+</style>
+<body>
+    <div class="slide">
+        <h2>ServPred</h2>
+        <a href="{% url 'welcome' %}" name="inicio">Inicio</a>
+        <a href="{% url 'menu' %}" class="monit" name="menu">Menu</a>
+        <a href="{% url 'monitoreo' %}" name="monitoreo">Monitoreo</a>
+        <a href="{% url 'auditoria' %}" name="auditoria">Auditoria</a>
+        <a href="{% url 'analisisdedatos' %}" name="analisis_datos">Analisis de datos</a>
+        <a href="{% url 'analisispredictivo' %}" name="predictivo">Analisis predictivo</a>
+        <a href="{% url 'recomendaciones' %}" name="recomendaciones">Recomendaciones</a>
+        <a href="{% url 'logout' %}" class="logout" name="Salir">Cerrar Sesión</a>
+    </div>
+
+    <div class="corr"> 
+        <div class="head">
+            <i class="fas fa-envelope"></i>
+            <span id="email">correo@correo.com</span>
+            <div id="options" class="options">
+                <a href="{% url 'administracion' %}" class="option">Administración</a>
+                <a href="{% url 'logout' %}" class="option">Cerrar sesión</a>
+            </div>
+        </div>
+        <div class="content-area">
+            <div class="container mt-5">
+                <h2 class="mb-4" style="color: #6c757d;">Recomendaciones ServPred</h2>
+                <div class="carousel" id="recommendationsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function loadRecommendations() {
+            try {
+                const recommendations = [
+                    {
+                        "id": 3,
+                        "recomends": "Según la estimación de vida útil de algunos discos, el disco A requiere revisión ya que en 48 días aproximadamente expirará su vida útil.",
+                        "creaciondate": "2024-11-01T03:13:22.206Z",
+                        "estados": "pendiente"
+                    },
+                    {
+                        "id": 4,
+                        "recomends": "Según la estimación de vida útil de algunos discos, el disco B requiere revisión ya que en 86 días aproximadamente expirará su vida útil.",
+                        "creaciondate": "2024-11-01T03:13:22.206Z",
+                        "estados": "pendiente"
+                    },
+                    {
+                        "id": 5,
+                        "recomends": "Según la estimación de vida útil de algunos discos, el disco C requiere revisión ya que en 136 días aproximadamente expirará su vida útil.",
+                        "creaciondate": "2024-11-01T03:13:22.206Z",
+                        "estados": "pendiente"
+                    },
+                    {
+                        "id": 6,
+                        "recomends": "Revisión de discos que su temperatura está bordeando los 70°C; sobre los 75°C están por...",
+                        "creaciondate": "2024-11-01T03:13:22.206Z",
+                        "estados": "pendiente"
+                    },
+                    {
+                        "id": 7,
+                        "recomends": "Actualizar versión de sistema operativo.",
+                        "creaciondate": "2024-11-01T03:13:22.206Z",
+                        "estados": "pendiente"
+                    },
+                    {
+                        "id": 8,
+                        "recomends": "Limpiar archivos temporales.",
+                        "creaciondate": "2024-11-01T03:13:22.206Z",
+                        "estados": "completada"
+                    }
+                ];
+    
+                const container = document.getElementById('recommendationsContainer');
+                container.innerHTML = '';
+    
+                recommendations.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <div class="card-header" style="color: #6c757d;">Recomendación ${item.id}</div>
+                        <div class="card-body" style="color: #6c757d;">
+                            <p style="color: #6c757d;">${item.recomends}</p>
+                            <small style="color: #6c757d;"><b>Estado:</b> ${item.estados}</small><br>
+                            <small style="color: #6c757d;"><b>Fecha de creación:</b> ${new Date(item.creaciondate).toLocaleDateString()}</small>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+    
+                // Llamamos a la función para iniciar el carrusel
+                autoScrollCarousel();
+            } catch (error) {
+                console.error('Error al cargar las recomendaciones:', error);
+            }
+        }
+    
+        function autoScrollCarousel() {
+            const carousel = document.querySelector('.carousel');
+            let scrollAmount = 0;
+            const scrollStep = 300; // Cantidad de desplazamiento por paso
+            const delay = 3000; // Intervalo de tiempo entre cada desplazamiento
+    
+            setInterval(() => {
+                scrollAmount += scrollStep;
+                if (scrollAmount >= carousel.scrollWidth - carousel.clientWidth) {
+                    scrollAmount = 0; // Reiniciar si llegamos al final
+                }
+                carousel.scrollTo({
+                    left: scrollAmount,
+                    behavior: 'smooth'
+                });
+            }, delay);
+        }
+    
+        document.addEventListener('DOMContentLoaded', loadRecommendations);
+    
+        document.addEventListener("DOMContentLoaded", function() {
+            // Hacer una solicitud a la API para obtener los datos del usuario autenticado
+            fetch('/api/usuarios/')
+            .then(response => response.json())
+            .then(data => {
+                // Si se ha autenticado correctamente y existe el correo
+                if (data && data.correo) {
+                    // Seleccionar el elemento del correo en el div .head
+                    let correoElement = document.querySelector('.head span');
+                    // Reemplazar el texto del span con el correo del usuario autenticado
+                    correoElement.textContent = data.correo;
+                } else {
+                    console.log('No se ha autenticado ningún usuario');
+                }
+            })
+            .catch(error => console.log('Error:', error));
+        });
+    
+        //-------------------------------------------------------------------------------------------------->
+        document.addEventListener('DOMContentLoaded', function() {
+            const email = document.getElementById('email');
+            const options = document.getElementById('options');
+    
+            email.addEventListener('click', function(event) {
+                event.stopPropagation(); // Evita que el clic se propague a otros elementos
+                if (options.style.display === 'block') {
+                    options.style.display = 'none';
+                } else {
+                    options.style.display = 'block';
+                }
+            });
+            document.addEventListener('click', function(event) {
+                if (!email.contains(event.target) && !options.contains(event.target)) {
+                    options.style.display = 'none';
+                }
+            });
+        });
+    </script>
+    
+</body>
+</html>

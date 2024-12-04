@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <title>Bienvenido</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: white;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .slide {
+            width: 250px;
+            background-color: #ffc107;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            color: #6c757d;
+        }
+        .slide h2 {
+            margin-bottom: 20px;
+        }
+        .slide a {
+            padding: 15px 10px;
+            margin: 5px 0;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.9s;
+        }
+        .slide a:hover {
+            background-color: #6c757d;
+        }
+        .slide a.monit {
+            background-color: #ffc107;
+        }
+        .slide a.monit:hover {
+            background-color: #6c757d;
+        }
+        .slide a.logout {
+            margin-top: auto;
+            background-color: #ffc107;
+        }
+        .slide a.logout:hover {
+            background-color: #6c757d;
+        }
+        .corr {
+            flex: 1;
+            padding: 100px;
+            overflow-y: auto;
+        }
+        .corr i { 
+            color: #6c757d;
+            padding: 10px;
+        }
+        .corr h1 {
+            margin-top: 0;
+            font-size: 40px;
+            color: #6c757d;
+        }
+        .corr p {
+            color: #6c757d;
+        }
+        .head {
+            background-color: white;
+            color: white;
+            padding: 15px;
+            text-align: right;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 290px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .head img {
+            vertical-align: middle;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+        .head span{
+            font-size: 14px;
+            margin-right: 10px;
+            color: #6c757d;
+        }
+        .options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 10px;
+            background: #ffc107;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            white-space: nowrap; 
+        }
+        .option {
+            display: block;
+            padding: 10px;
+            color: #f8f9fa;
+            text-decoration: none;
+        }
+        .option:hover {
+            background: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide">
+        <h2>ServPred</h2>
+        <a href="{% url 'welcome' %}">Inicio</a>
+        <a href="{% url 'menu' %}" class="monit">Menu</a>
+        <a href="{% url 'monitoreo' %}">Monitoreo</a>
+        <a href="{% url 'auditoria' %}">Auditoria</a>
+        <a href="{% url 'analisisdedatos' %}">Analisis de datos</a>
+        <a href="{% url 'analisispredictivo' %}">Analisis predictivo</a>
+        <a href="{% url 'recomendaciones' %}">Recomendaciones</a>
+        <a href="{% url 'logout' %}" class="logout">Cerrar Sesión</a>
+    </div>
+ 
+    <div class="corr"> 
+        <div class="head">
+            <i class="fas fa-sign-out-alt"></i>
+            <span id="email">Salir</span>
+            <div id="options" class="options">
+                <a href="{% url 'logout' %}" class="option">Cerrar sesión</a>
+            </div>
+        </div>
+        <br>
+        <div class="content">
+            <div class="welcome-section">
+                <h1 style="color: #6c757d;">Detalles del Usuario</h1>
+                <br>
+                <br>
+                <p><strong>Username:</strong> <span id="username">Cargando...</span></p>
+                <p><strong>Correo:</strong> <span id="user-email">Cargando...</span></p>
+                <p><strong>Fecha de Registro:</strong> <span id="fecha_registro">Cargando...</span></p>
+                <br>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Hacer una solicitud a la API para obtener los datos del usuario autenticado
+            fetch('/api/usuarios/')
+            .then(response => response.json())
+            .then(data => {
+                // Si se ha autenticado correctamente y existen los datos
+                if (data) {
+                    // Seleccionar los elementos en la página
+                    let usernameElement = document.getElementById('username');
+                    let emailElement = document.getElementById('user-email');
+                    let fechaRegistroElement = document.getElementById('fecha_registro');
+                    
+                    // Reemplazar el texto de los elementos con los datos del usuario
+                    usernameElement.textContent = data.username || 'No disponible';
+                    emailElement.textContent = data.correo || 'No disponible';
+                    
+                    // Formatear la fecha para mostrar solo la fecha
+                    let fechaRegistro = new Date(data.fecha_registro);
+                    let formattedDate = fechaRegistro.toISOString().split('T')[0];
+                    fechaRegistroElement.textContent = formattedDate || 'No disponible';
+                } else {
+                    console.log('No se ha autenticado ningún usuario');
+                }
+            })
+            .catch(error => console.log('Error:', error));
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+    const email = document.getElementById('email');
+    const options = document.getElementById('options');
+
+    email.addEventListener('click', function(event) {
+        event.stopPropagation(); // Evita que el clic se propague a otros elementos
+        if (options.style.display === 'block') {
+            options.style.display = 'none';
+        } else {
+            options.style.display = 'block';
+        }
+    });
+    document.addEventListener('click', function(event) {
+        if (!email.contains(event.target) && !options.contains(event.target)) {
+            options.style.display = 'none';
+        }
+    });
+});
+
+    </script>
+</body>
+</html>

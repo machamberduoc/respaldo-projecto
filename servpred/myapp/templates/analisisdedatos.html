@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: white;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .slide {
+            width: 250px;
+            background-color: #ffc107;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            color: #6c757d;
+        }
+        .slide h2 {
+            margin-bottom: 20px;
+        }
+        .slide a {
+            padding: 15px 10px;
+            margin: 5px 0;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .slide a:hover {
+            background-color: #6c757d;
+        }
+        .slide a.monit {
+            background-color: #ffc107;
+        }
+        .slide a.monit:hover {
+            background-color: #6c757d;
+        }
+        .slide a.logout {
+            margin-top: auto;
+            background-color: #ffc107;
+        }
+        .slide a.logout:hover {
+            background-color: #6c757d;
+        }
+        .corr {
+            flex: 1;
+            padding: 100px;
+            overflow-y: auto;
+        }
+        .corr h1 {
+            margin-top: 0;
+            font-size: 10px;
+            color: white;
+        }
+        .corr p {
+            color: #6c757d;
+        }
+        .head {
+            background-color: white;
+            color: white;
+            padding: 15px;
+            text-align: right;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 290px;
+            z-index: 1000;
+            display: flex;
+            align-items:  center;
+            justify-content:  flex-end;
+        }
+        .head img {
+            vertical-align: middle;
+            border-radius:  50%;
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+        .head span{
+            font-size: 14px;
+            margin-right: 10px;
+            color: #6c757d;
+        }
+        .chart-container {
+            position: relative;
+            width: 150px;
+            width: 100%;
+            height: 350px; 
+        }
+        .corr i {
+            color: #6c757d;
+            padding: 10px;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        .options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 15px;
+            background: #ffc107;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            white-space: nowrap; 
+        }
+        .option {
+            display: block;
+            padding: 10px;
+            color: #f8f9fa;
+            text-decoration: none;
+        }
+        .option:hover {
+            background: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide">
+        <h2>ServPred</h2>
+        <a href="{% url 'welcome' %}" name="inicio">Inicio</a>
+        <a href="{% url 'menu' %}" class="monit" name="menu">Menu</a>
+        <a href="{% url 'monitoreo' %}" name="monitoreo">Monitoreo</a>
+        <a href="{% url 'auditoria' %}" name="auditoria">Auditoria</a>
+        <a href="{% url 'analisisdedatos' %}" name="analisis_datos">Analisis de datos</a>
+        <a href="{% url 'analisispredictivo' %}" name="predictivo">Analisis predictivo</a>
+        <a href="{% url 'recomendaciones' %}" name="recomendaciones">Recomendaciones</a>
+        <a href="{% url 'logout' %}" class="logout">Cerrar Sesión</a>
+    </div>
+     <div class="corr"> 
+        <div class="head">
+            <i class="fas fa-envelope"></i>
+            <span id="email">correo@correo.com</span>
+            <div id="options" class="options">
+                <a href="{% url 'administracion' %}" class="option">Administración</a>
+                <a href="{% url 'logout' %}" class="option">Cerrar sesión</a>
+            </div>
+        </div>
+        <div class="content-area p-4 pt-5 mt-5">
+            <h2 class="mb-4" style="color: #6c757d;">Buscar Reporte por ID</h2>
+            <div class="mb-4 form-section">
+                <input type="text" class="form-control" placeholder="Buscar por ID..." id="search-input">
+            </div>
+             <div class="card mb-4">
+                <div class="card-body table-container" style="color: #6c757d;">      
+                    <h5 class="card-title" style="color: #6c757d;">Servidor</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="color: #6c757d;">ID</th>
+                                <th scope="col" style="color: #6c757d;">Nombre Servidor</th>
+                                <th scope="col" style="color: #6c757d;">Hora Reporte</th>
+                                <th scope="col" style="color: #6c757d;">Disco</th>
+                                <th scope="col" style="color: #6c757d;">Espacio Total</th>
+                                <th scope="col" style="color: #6c757d;">Uso GB Disco</th>
+                                <th scope="col" style="color: #6c757d;">GB Libres</th>
+                                <th scope="col" style="color: #6c757d;">Megabytes</th>
+                                <th scope="col" style="color: #6c757d;">Free Megabytes</th>
+                                <th scope="col" style="color: #6c757d;">Temperatura</th>
+                                <th scope="col" style="color: #6c757d;">Velocidad Disco</th>
+                            </tr>
+                        </thead>
+                        <tbody id="data-table-body">
+                            <!-- Los datos se insertarán aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        <div class="pt-5 mt-5">
+                <div class="row">
+                    <h5 class="card-title" style="color: #6c757d;">Graficos de Distribucion y analisis estadistico</h5> 
+                    <br>
+                    <br>
+                    <br>
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title" style="color: #6c757d;">Distriucion de temperatura por velocidad</h5>
+                                <br>
+                                <div class="chart-container">
+                                    <div id="scatterplot" style="width: 100%; height: 300px;"></div> <!-- Cambiado a un div -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title" style="color: #6c757d;">Estadisticas</h5>
+                                <br>
+                                <div class="chart-container">
+                                    <div id="statistics" style="width: 100%; height: 300px; color: #6c757d;"></div> <!-- Cambiado a un div -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br>    
+                    <br>
+                <div class="pt-5 mt-5">
+                <h5 class="card-title" style="color: #6c757d;">Graficos Predictivos</h5> 
+                <br>
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #6c757d;">Matriz Comparativa KPI y Regresion Lineal</h5>             
+                        <form>
+                            <div class="container mt-4">
+                                <h1 class="mb-4">Análisis de Datos</h1>
+                                <ul class="nav nav-tabs" id="analysisTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true" style="color: #6c757d;">Resumen General</button>
+                                    </li>
+                                </ul>
+                        
+                                <div class="tab-content mt-4" id="analysisTabsContent">
+                                    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="card p-3 mb-4">
+                                                    <h5 class="mb-3" style="color: #6c757d;">Análisis de KPI Relevante</h5>
+                                                    <div class="mb-3">
+                                                        <label for="forecastPeriodKPI" class="form-label" style="color: #6c757d;">Seleccionar Período de Predicción (KPI)</label>
+                                                        <select id="forecastPeriodKPI" class="form-select" style="color: #6c757d;">
+                                                            <option value="3" style="color: #6c757d;">3 Meses</option>
+                                                            <option value="6" style="color: #6c757d;">6 Meses</option>
+                                                            <option value="9" style="color: #6c757d;">9 Meses</option>
+                                                        </select>
+                                                    </div>
+                                                    <canvas id="kpiChart"></canvas>
+                                                </div>
+                                            </div>
+                        
+                                            <div class="col-md-6">
+                                                <div class="card p-3 mb-4">
+                                                    <h5 class="mb-3" style="color: #6c757d;">Análisis de Regresión Lineal</h5>
+                                                    <div class="mb-3">
+                                                        <label for="forecastPeriodRegression" class="form-label" style="color: #6c757d;">Seleccionar Período de Predicción (Regresión Lineal)</label>
+                                                        <select id="forecastPeriodRegression" class="form-select" style="color: #6c757d;">
+                                                            <option value="3" style="color: #6c757d;">3 Meses</option>
+                                                            <option value="6" style="color: #6c757d;">6 Meses</option>
+                                                            <option value="9" style="color: #6c757d;">9 Meses</option>
+                                                        </select>
+                                                    </div>
+                                                    <canvas id="linearRegressionChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <!-- Scripts -->
+                        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+                        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                        
+                        <script>
+                          let kpiChart;
+let linearRegressionChart;
+
+// Datos ficticios para el gráfico de KPI (Costos de Propiedad)
+async function fetchKPIData() {
+    const disks = ['Disk A', 'Disk B', 'Disk C', 'Disk D', 'Disk E', 'Disk F', 'Disk G', 'Disk H', 'Disk I', 'Disk J'];
+    const serverCost = 2500000; // Costo aproximado de un servidor en CLP
+
+    return disks.map((disk, index) => {
+        // Establecer un rango de precios realistas para los discos (50k - 500k CLP)
+        const diskCost = Math.floor(50000 + Math.random() * 450000); 
+
+        // Los costos de propiedad de cada disco son una mezcla del costo del disco y un porcentaje adicional (relacionado con el mantenimiento o costos operativos)
+        const costOwnership = diskCost + (diskCost * 0.25); // Un 25% de costo adicional por mantenimiento, energía, etc.
+
+        return {
+            disknamex: disk,
+            costownership: costOwnership
+        };
+    });
+}
+
+// Datos ficticios para el gráfico de regresión lineal (Monitoreo de tamaño y uso)
+async function fetchKPIDataForRegression() {
+    // Generamos datos donde algunos valores de 'totalsizem' son constantes
+    const storageLimit = 1000; // Tamaño máximo de almacenamiento disponible
+    return Array.from({ length: 10 }, (_, i) => {
+        const totalSize = i < 5 ? 210 : 1000; // Los primeros 5 puntos tienen un tamaño constante
+        const usedGigabytes = 90 + i * 10 + Math.random() * 50 + (i % 2 === 0 ? Math.random() * 100 : 0); // Variación en used gigabytes
+        return {
+            totalsizem: totalSize,
+            usedgigasbytsm: usedGigabytes
+        };
+    });
+}
+
+// Configuración del gráfico de KPI
+async function setupKPIChart() {
+    const kpiData = await fetchKPIData();
+    const labels = kpiData.map(item => item.disknamex);
+    const costOwnershipData = kpiData.map(item => item.costownership);
+
+    kpiChart = new Chart(document.getElementById('kpiChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Costos de Propiedad (CLP)',
+                data: costOwnershipData,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 50000, // Establecer el paso de la escala a 50,000 CLP
+                        callback: function(value) {
+                            return `CLP ${value.toLocaleString()}`; // Formatear como CLP
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Predicción y actualización del gráfico de KPI
+async function predictCostOwnership(selectedPeriod) {
+    const kpiData = await fetchKPIData();
+    const predictedValues = performPrediction(kpiData, selectedPeriod);
+
+    kpiChart.data.labels = predictedValues.map(item => item.disknamex);
+    kpiChart.data.datasets[0].data = predictedValues.map(item => item.predictedCostOwnership);
+    kpiChart.update();
+}
+
+function performPrediction(kpiData, selectedPeriod) {
+    const increaseRate = getCostIncreaseRate(selectedPeriod);
+    return kpiData.map(item => ({
+        disknamex: item.disknamex,
+        predictedCostOwnership: item.costownership * (1 + increaseRate)
+    }));
+}
+
+function getCostIncreaseRate(selectedPeriod) {
+    switch (selectedPeriod) {
+        case 3: return 0.05; // Aumento del 5% para 3 meses
+        case 6: return 0.15; // Aumento del 15% para 6 meses
+        case 9: return 0.30; // Aumento del 30% para 9 meses
+        default: return 0;
+    }
+}
+
+// Configuración del gráfico de regresión lineal
+async function setupLinearRegressionChart(selectedPeriod) {
+    const kpiData = await fetchKPIDataForRegression();
+
+    const regressionLabels = kpiData.map(item => item.totalsizem.toFixed(2));
+    const regressionData = kpiData.map(item => performRegressionPrediction(item.usedgigasbytsm, item.totalsizem, selectedPeriod));
+
+    if (linearRegressionChart) {
+        linearRegressionChart.destroy();
+    }
+
+    linearRegressionChart = new Chart(document.getElementById('linearRegressionChart'), {
+        type: 'line',
+        data: {
+            labels: regressionLabels,
+            datasets: [{
+                label: `Predicción Regresión Lineal (${selectedPeriod} Meses)`,
+                data: regressionData,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        suggestedMax: 1000 // Establecemos un límite para no exceder el tamaño máximo de almacenamiento
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Predicción de la regresión lineal con ajuste de límite
+function performRegressionPrediction(usedGigabytes, totalSize, selectedPeriod) {
+    const growthRate = getCostIncreaseRate(selectedPeriod);
+    const predictedValue = usedGigabytes * (1 + growthRate);
+    
+    // Asegurarse de que el valor predicho no exceda el almacenamiento máximo
+    return Math.min(predictedValue, totalSize);
+}
+
+// Configuración inicial de gráficos
+setupKPIChart();
+setupLinearRegressionChart(3); // Predicción por defecto de 3 meses
+
+// Manejo de eventos para la selección del período
+document.getElementById('forecastPeriodKPI').addEventListener('change', (event) => {
+    const selectedPeriod = parseInt(event.target.value, 10);
+    predictCostOwnership(selectedPeriod);
+});
+
+document.getElementById('forecastPeriodRegression').addEventListener('change', (event) => {
+    const selectedPeriod = parseInt(event.target.value, 10);
+    setupLinearRegressionChart(selectedPeriod);
+});
+
+                        </script>
+<script>
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// Función para obtener los datos ficticios desde la API (simula una llamada a la API)
+async function fetchData() {
+    // Datos ficticios
+    return [
+        {
+            id: 1,
+            serverd: "Server1",
+            standartd: "Standard1",
+            disknamed: "A:/",
+            totalsized: "500",
+            usedgigasbytsd: "300",
+            freegigabytesd: "200",
+            usedbytesd: "300000000000",
+            freebytesd: "200000000000",
+            tempdiskd: 50,
+            readwritenspeadd: 60
+        },
+        {
+            id: 2,
+            serverd: "Server1",
+            standartd: "Standard1",
+            disknamed: "A:/",
+            totalsized: "500",
+            usedgigasbytsd: "250",
+            freegigabytesd: "250",
+            usedbytesd: "250000000000",
+            freebytesd: "250000000000",
+            tempdiskd: 45,
+            readwritenspeadd: 55
+        },
+        {
+            id: 3,
+            serverd: "Server2",
+            standartd: "Standard2",
+            disknamed: "A:/",
+            totalsized: "500",
+            usedgigasbytsd: "400",
+            freegigabytesd: "100",
+            usedbytesd: "400000000000",
+            freebytesd: "100000000000",
+            tempdiskd: 60,
+            readwritenspeadd: 65
+        },
+        {
+            id: 4,
+            serverd: "Server3",
+            standartd: "Standard3",
+            disknamed: "A:/",
+            totalsized: "500",
+            usedgigasbytsd: "450",
+            freegigabytesd: "50",
+            usedbytesd: "450000000000",
+            freebytesd: "50000000000",
+            tempdiskd: 55,
+            readwritenspeadd: 70
+        },
+        {
+            id: 5,
+            serverd: "Server4",
+            standartd: "Standard4",
+            disknamed: "A:/",
+            totalsized: "500",
+            usedgigasbytsd: "350",
+            freegigabytesd: "150",
+            usedbytesd: "350000000000",
+            freebytesd: "150000000000",
+            tempdiskd: 53,
+            readwritenspeadd: 62
+        }
+    ];
+}
+
+// Función para calcular estadísticas básicas
+function calculateStatistics(data) {
+    if (data.length === 0) return null;
+
+    const uniqueDisks = new Set(data.map(item => item.disknamed));
+    const totalDisks = uniqueDisks.size;
+
+    const usedSize = data.reduce((sum, item) => sum + parseFloat(item.usedgigasbytsd), 0);
+    const freeSize = data.reduce((sum, item) => sum + parseFloat(item.freegigabytesd), 0);
+    const totalCount = data.length;
+
+    const avgUsedSize = usedSize / totalCount || 0;
+    const avgFreeSize = freeSize / totalCount || 0;
+
+    const maxUsedSize = Math.max(...data.map(item => parseFloat(item.usedgigasbytsd)));
+    const minUsedSize = Math.min(...data.map(item => parseFloat(item.usedgigasbytsd)));
+    const maxTotalSize = Math.max(...data.map(item => parseFloat(item.totalsized)));
+    const minTotalSize = Math.min(...data.map(item => parseFloat(item.totalsized)));
+
+    return {
+        totalDisks,
+        totalCount,
+        avgUsedSize,
+        avgFreeSize,
+        maxUsedSize,
+        minUsedSize,
+        maxTotalSize,
+        minTotalSize
+    };
+}
+
+// Función para mostrar las estadísticas
+async function displayStatistics() {
+    const data = await fetchData();
+    const stats = calculateStatistics(data);
+    
+    if (!stats) {
+        console.warn('No hay estadísticas para mostrar.');
+        return;
+    }
+
+    const statsDiv = document.getElementById('statistics');
+    statsDiv.innerHTML = `
+        <p>Total de Discos: ${stats.totalDisks}</p>
+        <p>Total de Registros: ${stats.totalCount}</p>
+        <p>Espacio Utilizado Promedio: ${stats.avgUsedSize.toFixed(2)} GB</p>
+        <p>Espacio Libre Promedio: ${stats.avgFreeSize.toFixed(2)} GB</p>
+        <p>Tamaño Máximo Utilizado: ${stats.maxUsedSize} GB</p>
+        <p>Tamaño Mínimo Utilizado: ${stats.minUsedSize} GB</p>
+        <p>Tamaño Máximo Total: ${stats.maxTotalSize} GB</p>
+        <p>Tamaño Mínimo Total: ${stats.minTotalSize} GB</p>
+    `;
+}
+
+// Función para actualizar la tabla con las primeras 5 filas del disco 'A:/'
+function updateTable(filteredData) {
+    const tableBody = document.getElementById('data-table-body');
+    tableBody.innerHTML = ''; // Limpiar la tabla antes de actualizarla
+
+    filteredData.slice(0, 5).forEach(item => { // Limita a 5 filas
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td style="color: #6c757d;">${item.id}</td>
+            <td style="color: #6c757d;">${item.serverd}</td>
+            <td style="color: #6c757d;">${item.standartd}</td>
+            <td style="color: #6c757d;">${item.disknamed}</td>
+            <td style="color: #6c757d;">${item.totalsized} GB</td>
+            <td style="color: #6c757d;">${item.usedgigasbytsd} GB</td>
+            <td style="color: #6c757d;">${item.freegigabytesd} GB</td>
+            <td style="color: #6c757d;">${item.usedbytesd}</td>
+            <td style="color: #6c757d;">${item.freebytesd}</td>
+            <td style="color: #6c757d;">${item.tempdiskd}°C</td>
+            <td style="color: #6c757d;">${item.readwritenspeadd} MB/s</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Función para actualizar la tabla y el gráfico de dispersión
+function displayDiskData() {
+    fetchData().then(data => {
+        if (!data || data.length === 0) {
+            console.error("No se encontraron datos");
+            return;
+        }
+
+        try {
+            // Filtrar solo los datos del disco 'A:/'
+            const filteredData = data.filter(item => item.disknamed === 'A:/');
+
+            // Actualizar la tabla con solo las primeras 5 filas del disco 'A:/'
+            const firstFiveRows = filteredData.slice(0, 5);
+            updateTable(firstFiveRows);
+
+            // Generar datos ficticios para el gráfico
+            const scatterDataPoints = [];
+            for (let i = 0; i < 40; i++) {
+                const readWriteSpeed = Math.random() * 100; // Velocidad aleatoria entre 0 y 100 MB/s
+                let tempDisk = Math.min(Math.max((readWriteSpeed / 100) * 60 + 20, 20), 80); // Relación lógica
+
+                // Introducir anomalías en 5-6 puntos
+                if (i % 7 === 0) {
+                    tempDisk += 10 + Math.random() * 10; // Aumentar temperatura aleatoriamente para simular anomalías
+                }
+
+                scatterDataPoints.push({ x: readWriteSpeed, y: tempDisk });
+            }
+
+            // Crear el gráfico de dispersión
+            const scatterData = [{
+                x: scatterDataPoints.map(item => item.x), // Velocidad de lectura/escritura
+                y: scatterDataPoints.map(item => item.y), // Temperatura del disco
+                mode: 'markers',
+                type: 'scatter',
+                marker: { 
+                    size: 6, // Tamaño de los puntos
+                    color: 'rgb(93, 164, 214)', // Todos los puntos son azules
+                    opacity: 0.8, // Puntos semitransparentes
+                    line: {
+                        width: 1,
+                        color: 'rgb(40, 40, 40)' // Borde de los puntos
+                    }
+                }
+            }];
+
+            // Layout para el gráfico de dispersión
+            const scatterLayout = {
+                title: 'Relación Velocidad vs Temperatura del Disco (Con Anomalías)',
+                xaxis: { 
+                    title: 'Velocidad de Lectura/Escritura (MB/s)',
+                    range: [0, 100]
+                },
+                yaxis: { 
+                    title: 'Temperatura (°C)',
+                    range: [20, 100]
+                },
+                margin: { t: 50, l: 50, r: 30, b: 50 },
+                height: 350,
+                width: 550,
+                font: { family: 'Arial, sans-serif', size: 10 },
+                plot_bgcolor: 'rgba(250, 250, 250, 1)',
+                hovermode: 'closest',
+            };
+
+            // Crear el gráfico con Plotly
+            Plotly.newPlot('scatterplot', scatterData, scatterLayout);
+        } catch (error) {
+            console.error("Error al procesar los datos", error);
+        }
+    });
+}
+
+// Llamar las funciones cuando el DOM esté cargado
+document.addEventListener('DOMContentLoaded', function () {
+    displayStatistics(); // Mostrar estadísticas
+    displayDiskData(); // Mostrar datos del disco y gráfico
+});
+
+// ------------------------------------------------------------------------------------------------------->
+        document.addEventListener("DOMContentLoaded", function() {
+            // Hacer una solicitud a la API para obtener los datos del usuario autenticado
+            fetch('/api/usuarios/')
+            .then(response => response.json())
+            .then(data => {
+                // Si se ha autenticado correctamente y existe el correo
+                if (data && data.correo) {
+                    // Seleccionar el elemento del correo en el div .head
+                    let correoElement = document.querySelector('.head span');
+                    // Reemplazar el texto del span con el correo del usuario autenticado
+                    correoElement.textContent = data.correo;
+                } else {
+                    console.log('No se ha autenticado ningún usuario');
+                }
+            })
+            .catch(error => console.log('Error:', error));
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+    const email = document.getElementById('email');
+    const options = document.getElementById('options');
+
+    email.addEventListener('click', function(event) {
+        event.stopPropagation(); // Evita que el clic se propague a otros elementos
+        if (options.style.display === 'block') {
+            options.style.display = 'none';
+        } else {
+            options.style.display = 'block';
+        }
+    });
+    document.addEventListener('click', function(event) {
+        if (!email.contains(event.target) && !options.contains(event.target)) {
+            options.style.display = 'none';
+        }
+    });
+});
+
+    </script>
+    </div>
+</body>
+</html>
+
+
